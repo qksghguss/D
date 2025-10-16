@@ -27,12 +27,21 @@ export function UserMenu({ name, email }: UserMenuProps): JSX.Element {
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {
-    setIsSigningOut(true);
-    if (supabase) {
-      await supabase.auth.signOut();
+    if (!supabase) {
+      router.push('/login');
+      router.refresh();
+      return;
     }
 
-    await supabase.auth.signOut();
+    setIsSigningOut(true);
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error('Failed to sign out from Supabase:', error.message);
+      setIsSigningOut(false);
+      return;
+    }
+
     router.push('/login');
     router.refresh();
   };

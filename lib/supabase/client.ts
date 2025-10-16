@@ -1,22 +1,22 @@
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { getSupabaseConfig } from './config';
+import { getClientSupabaseConfig } from './config';
 
-type GenericSupabaseClient = SupabaseClient<any, any, any, any, any>;
+type GenericSupabaseClient = SupabaseClient<any>;
 
 export function createClient(): GenericSupabaseClient | null {
-  const config = getSupabaseConfig();
+  const config = getClientSupabaseConfig();
 
   if (!config) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('Supabase configuration is missing. Returning null client instance.');
+    }
     return null;
   }
 
-  return createClientComponentClient({
+  return createClientComponentClient<any>({
     supabaseKey: config.supabaseKey,
     supabaseUrl: config.supabaseUrl
   });
-
-export function createClient() {
-  return createClientComponentClient();
 }

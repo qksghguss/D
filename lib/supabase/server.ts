@@ -2,25 +2,29 @@ import { cookies } from 'next/headers';
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { getSupabaseConfig } from './config';
+import { getServerSupabaseConfig } from './config';
 
-type GenericSupabaseClient = SupabaseClient<any, any, any, any, any>;
+type GenericSupabaseClient = SupabaseClient<any>;
 
 export function createServerClient(): GenericSupabaseClient | null {
-  const config = getSupabaseConfig();
+  const result = getServerSupabaseConfig();
 
-  if (!config) {
+  if (!result) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('Supabase configuration is missing. Returning null server client instance.');
+    }
     return null;
   }
 
-  return createServerComponentClient(
+  if (result.usedPublicFallback && process.env.NODE_ENV !== 'production') {
+    console.warn('Supabase server configuration is missing. Falling back to public environment variables.');
+  }
+
+  return createServerComponentClient<any>(
     { cookies },
     {
-      supabaseKey: config.supabaseKey,
-      supabaseUrl: config.supabaseUrl
+      supabaseKey: result.config.supabaseKey,
+      supabaseUrl: result.config.supabaseUrl
     }
   );
-
-export function createServerClient() {
-  return createServerComponentClient({ cookies });
 }

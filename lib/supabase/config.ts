@@ -3,59 +3,93 @@ export interface SupabaseConfig {
   supabaseKey: string;
 }
 
-function readSupabaseUrl(): { publicUrl: string; serverUrl: string } {
+interface SupabaseEnv {
+  url: string;
+  key: string;
+}
+
+export interface ServerSupabaseConfigResult {
+  config: SupabaseConfig;
+  usedPublicFallback: boolean;
+}
+
+function normalizeEnvValue(value: string | undefined): string {
+  return (value ?? '').trim();
+}
+
+function readPublicSupabaseEnv(): SupabaseEnv {
   return {
-    publicUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-    serverUrl: process.env.SUPABASE_URL ?? ''
+    url: normalizeEnvValue(process.env.NEXT_PUBLIC_SUPABASE_URL),
+    key: normalizeEnvValue(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
   };
 }
 
-function readSupabaseKey(): { publicKey: string; serverKey: string } {
+function readServerSupabaseEnv(): SupabaseEnv {
   return {
-    publicKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
-    serverKey: process.env.SUPABASE_ANON_KEY ?? ''
+    url: normalizeEnvValue(process.env.SUPABASE_URL),
+    key: normalizeEnvValue(process.env.SUPABASE_ANON_KEY)
   };
 }
 
-export function getSupabaseConfig(): SupabaseConfig | null {
-  const { publicUrl, serverUrl } = readSupabaseUrl();
-  const { publicKey, serverKey } = readSupabaseKey();
+export function getClientSupabaseConfig(): SupabaseConfig | null {
+  const { url, key } = readPublicSupabaseEnv();
 
-  const supabaseUrl = publicUrl || serverUrl;
-  const supabaseKey = publicKey || serverKey;
+  if (!url || !key) {
+    return null;
+  }
+
+  return {
+    supabaseUrl: url,
+    supabaseKey: key
+  };
+}
+
+export function getServerSupabaseConfig(): ServerSupabaseConfigResult | null {
+  const publicEnv = readPublicSupabaseEnv();
+  const serverEnv = readServerSupabaseEnv();
+
+  const supabaseUrl = serverEnv.url || publicEnv.url;
+  const supabaseKey = serverEnv.key || publicEnv.key;
 
   if (!supabaseUrl || !supabaseKey) {
     return null;
   }
 
+  const usedPublicUrl = !serverEnv.url && Boolean(publicEnv.url);
+  const usedPublicKey = !serverEnv.key && Boolean(publicEnv.key);
+  const usedPublicFallback = usedPublicUrl || usedPublicKey;
+
   return {
-    supabaseUrl,
-    supabaseKey
+    config: {
+      supabaseUrl,
+      supabaseKey
+    },
+    usedPublicFallback
   };
 }
 
 export function isSupabaseConfigured(): boolean {
-  return getSupabaseConfig() !== null;
+  return getServerSupabaseConfig() !== null;
 }
 
 export function missingSupabaseEnvVars(): string[] {
   const missing = new Set<string>();
-  const { publicUrl, serverUrl } = readSupabaseUrl();
-  const { publicKey, serverKey } = readSupabaseKey();
+  const publicEnv = readPublicSupabaseEnv();
+  const serverEnv = readServerSupabaseEnv();
 
-  if (!publicUrl) {
+  if (!publicEnv.url) {
     missing.add('NEXT_PUBLIC_SUPABASE_URL');
   }
 
-  if (!publicKey) {
+  if (!publicEnv.key) {
     missing.add('NEXT_PUBLIC_SUPABASE_ANON_KEY');
   }
 
-  if (!publicUrl && !serverUrl) {
+  if (!serverEnv.url) {
     missing.add('SUPABASE_URL');
   }
 
-  if (!publicKey && !serverKey) {
+  if (!serverEnv.key) {
     missing.add('SUPABASE_ANON_KEY');
   }
 
