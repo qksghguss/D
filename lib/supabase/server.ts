@@ -20,4 +20,7 @@ export function createServerClient(): GenericSupabaseClient | null {
       supabaseUrl: config.supabaseUrl
     }
   );
+
+export function createServerClient() {
+  return createServerComponentClient({ cookies });
 }

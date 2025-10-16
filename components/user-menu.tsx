@@ -28,11 +28,11 @@ export function UserMenu({ name, email }: UserMenuProps): JSX.Element {
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
-
     if (supabase) {
       await supabase.auth.signOut();
     }
 
+    await supabase.auth.signOut();
     router.push('/login');
     router.refresh();
   };

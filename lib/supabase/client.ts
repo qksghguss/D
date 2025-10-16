@@ -16,4 +16,7 @@ export function createClient(): GenericSupabaseClient | null {
     supabaseKey: config.supabaseKey,
     supabaseUrl: config.supabaseUrl
   });
+
+export function createClient() {
+  return createClientComponentClient();
 }

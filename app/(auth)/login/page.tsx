@@ -1,9 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-
 import { MissingSupabaseConfig } from '@/components/missing-supabase-config';
 import { createServerClient } from '@/lib/supabase/server';
-
 import { LoginForm } from './login-form';
 
 export default async function LoginPage(): Promise<JSX.Element> {

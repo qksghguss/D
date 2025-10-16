@@ -22,7 +22,6 @@ export function LoginForm(): JSX.Element {
       </div>
     );
   }
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitting(true);
