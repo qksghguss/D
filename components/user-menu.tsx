@@ -28,6 +28,10 @@ export function UserMenu({ name, email }: UserMenuProps): JSX.Element {
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
+
     await supabase.auth.signOut();
     router.push('/login');
     router.refresh();
@@ -71,6 +75,9 @@ export function UserMenu({ name, email }: UserMenuProps): JSX.Element {
         >
           <LogOut className="h-4 w-4" /> {isSigningOut ? '로그아웃 중...' : '로그아웃'}
         </DropdownMenuItem>
+        {!supabase ? (
+          <p className="px-2 pb-2 text-xs text-amber-600">Supabase 구성이 필요합니다.</p>
+        ) : null}
       </DropdownMenuContent>
     </DropdownMenu>
   );

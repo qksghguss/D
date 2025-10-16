@@ -1,12 +1,20 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-
+import { MissingSupabaseConfig } from '@/components/missing-supabase-config';
 import { createServerClient } from '@/lib/supabase/server';
-
 import { LoginForm } from './login-form';
 
 export default async function LoginPage(): Promise<JSX.Element> {
   const supabase = createServerClient();
+
+  if (!supabase) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-6 py-12">
+        <MissingSupabaseConfig />
+      </div>
+    );
+  }
+
   const {
     data: { session }
   } = await supabase.auth.getSession();

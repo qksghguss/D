@@ -14,6 +14,14 @@ export function LoginForm(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  if (!supabase) {
+    return (
+      <div className="space-y-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+        <p className="font-medium">Supabase 환경 변수가 설정되지 않았습니다.</p>
+        <p>환경 변수를 구성한 뒤 페이지를 새로고침하면 로그인할 수 있습니다.</p>
+      </div>
+    );
+  }
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitting(true);
